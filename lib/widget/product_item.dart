@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../screens/product_detail_screen.dart';
 import '../providers/product.dart';
+import '../providers/cart.dart';
 
 class ProductItem extends StatelessWidget {
   void _setectProduct(BuildContext context, String id) {
@@ -13,43 +14,48 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final product = Provider.of<Product>(context);
-    final id = product.id;
-    final title = product.title;
-    final imgUrl = product.imageUrl;
+    final product = Provider.of<Product>(context, listen: false);
+    //final cart = Provider.of<Cart>(context, listen: false);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GestureDetector(
-        onTap: () => _setectProduct(context, id),
+        onTap: () => _setectProduct(context, product.id),
         child: GridTile(
-          child: Image.network(
-            imgUrl,
-            fit: BoxFit.cover,
-          ),
-          footer: ClipRRect(
-            child: GridTileBar(
+            child: Image.network(
+              product.imageUrl,
+              fit: BoxFit.cover,
+            ),
+            footer: GridTileBar(
               backgroundColor: Colors.black87,
-              leading: IconButton(
-                icon: Icon(
-                  product.isFavourite ? Icons.favorite : Icons.favorite_outline,
-                  color: Theme.of(context).accentColor,
+              leading: Consumer<Product>(
+                builder: (context, product, child) => IconButton(
+                  icon: Icon(
+                    product.isFavourite
+                        ? Icons.favorite
+                        : Icons.favorite_outline,
+                    color: Theme.of(context).accentColor,
+                  ),
+                  onPressed: () => product.toggleFavourite(),
                 ),
-                onPressed: () => product.toggleFavourite(),
               ),
               title: Text(
-                title,
+                product.title,
                 textAlign: TextAlign.center,
               ),
-              trailing: IconButton(
-                icon: Icon(
-                  Icons.shopping_cart,
-                  color: Theme.of(context).accentColor,
+              trailing: Consumer<Cart>(
+                builder: (context, cart, ch) => IconButton(
+                  icon: Icon(
+                    cart.isProductAdded(product.id)
+                        ? Icons.shopping_cart
+                        : Icons.shopping_cart_outlined,
+                    color: Theme.of(context).accentColor,
+                  ),
+                  onPressed: () =>
+                      cart.addItem(product.id, product.title, product.price),
                 ),
-                onPressed: () {},
               ),
-            ),
-          ),
-        ),
+            )),
       ),
     );
   }

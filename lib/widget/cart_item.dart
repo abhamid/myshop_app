@@ -24,11 +24,6 @@ class CartItem extends StatelessWidget {
     return Dismissible(
       key: ValueKey(this.id),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        if (DismissDirection.endToStart == direction) {
-          Provider.of<Cart>(context, listen: false).removeItem(this.productId);
-        }
-      },
       background: Container(
         color: Theme.of(context).errorColor,
         child: Icon(
@@ -67,6 +62,34 @@ class CartItem extends StatelessWidget {
           ),
         ),
       ),
+      confirmDismiss: (direction) {
+        return showDialog(
+            context: context,
+            builder: (ctx) {
+              return AlertDialog(
+                title: Text('Are you sure'),
+                content: Text(
+                    'Do you want to remove an iten from the shopping cart'),
+                actions: <Widget>[
+                  FlatButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(ctx).pop(false);
+                      }),
+                  FlatButton(
+                      child: Text('Yes'),
+                      onPressed: () {
+                        Navigator.of(ctx).pop(true);
+                      }),
+                ],
+              );
+            });
+      },
+      onDismissed: (direction) {
+        if (DismissDirection.endToStart == direction) {
+          Provider.of<Cart>(context, listen: false).removeItem(this.productId);
+        }
+      },
     );
   }
 }

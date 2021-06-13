@@ -57,7 +57,7 @@ class Cart with ChangeNotifier {
     notifyListeners();
   }
 
-  void removeAnItem(String productId) {
+  void removeSingleItem(String productId) {
     if (!_items.containsKey(productId)) return;
 
     var cartItem = _items[productId];

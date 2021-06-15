@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/products.dart';
-import '../providers/product.dart';
 
+import '../screens/edit_product_screen.dart';
 import '../widget/app_drawer.dart';
 import '../widget/user_product_item.dart';
 
@@ -22,7 +22,7 @@ class UserProductScreen extends StatelessWidget {
           IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
-                //Navigate to the new product screens
+                Navigator.of(context).pushNamed(EditProductScreen.routeName);
               }),
         ],
       ),

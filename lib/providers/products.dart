@@ -51,7 +51,6 @@ class Products with ChangeNotifier {
   }
 
   void addProduct(
-    String id,
     String title,
     String description,
     double price,
@@ -59,7 +58,7 @@ class Products with ChangeNotifier {
     bool isFavourite,
   ) {
     final product = Product(
-      id: id,
+      id: DateTime.now().toString(),
       title: title,
       description: description,
       price: price,
@@ -68,6 +67,36 @@ class Products with ChangeNotifier {
     );
 
     _items.add(product);
+    notifyListeners();
+  }
+
+  void editProduct(Product productToEdit) {
+    if (productToEdit == null) return;
+
+    String editProductId = productToEdit.id;
+    int productIndex = -1;
+    if (productToEdit.id != null) {
+      productIndex =
+          _items.indexWhere((product) => product.id == editProductId);
+    }
+
+    if (productIndex < 0) {
+      addProduct(
+        productToEdit.title,
+        productToEdit.description,
+        productToEdit.price,
+        productToEdit.imageUrl,
+        productToEdit.isFavourite,
+      );
+    } else {
+      _items[productIndex] = productToEdit;
+      notifyListeners();
+    }
+  }
+
+  void deleteProduct(String productId) {
+    if (productId == null) return;
+    _items.removeWhere((product) => product.id == productId);
     notifyListeners();
   }
 }

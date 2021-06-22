@@ -213,7 +213,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProductAsync(String productId) async {
     if (productId == null) return;
-    final url = Uri.https(_authority, '/products/$productId');
+    final url = Uri.https(_authority, '/products/$productId.json');
 
     final productIndex =
         _items.indexWhere((product) => product.id == productId);

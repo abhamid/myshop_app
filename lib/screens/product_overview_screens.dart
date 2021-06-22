@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 import '../screens/shopping_cart_screen.dart';
 import '../widget/product_grid_view.dart';
 import '../widget/badge.dart';
 import '../providers/cart.dart';
 import '../widget/app_drawer.dart';
+import '../providers/product.dart';
+import '../providers/products.dart';
 
 enum FilterOptions {
   Favoutires,
@@ -19,6 +22,38 @@ class ProductOverViewPage extends StatefulWidget {
 
 class _ProductOverViewPageState extends State<ProductOverViewPage> {
   bool _showOnlyFavoutites = false;
+  bool _isInitDone = false;
+
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    // Future.delayed(Duration.zero).then((_) {
+    //   Provider.of<Products>(context).fetchProductsFromServer();
+    // });
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (!_isInitDone) {
+      setState(() {
+        this._isLoading = true;
+      });
+      Provider.of<Products>(context).fetchProductsFromServer().then((_) {
+        setState(() {
+          this._isLoading = false;
+        });
+      }).catchError((error) {
+        print(error);
+        setState(() {
+          this._isLoading = false;
+        });
+      });
+      _isInitDone = true;
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +98,13 @@ class _ProductOverViewPageState extends State<ProductOverViewPage> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductGridView(
-        showOnlyFavourites: this._showOnlyFavoutites,
-      ),
+      body: this._isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductGridView(
+              showOnlyFavourites: this._showOnlyFavoutites,
+            ),
     );
   }
 }

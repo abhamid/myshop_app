@@ -90,6 +90,54 @@ class _EditProductScreenState extends State<EditProductScreen> {
     super.dispose();
   }
 
+  void _saveFormAsync() async {
+    final isValid = _form.currentState.validate();
+    if (!isValid) return;
+
+    _form.currentState.save();
+    setState(() {
+      this._isLoading = true;
+    });
+
+    //Add Product
+    try {
+      if (_productToEdit.id == null) {
+        await Provider.of<Products>(context, listen: false).addProductAsync(
+          _productToEdit.title,
+          _productToEdit.description,
+          _productToEdit.price,
+          _productToEdit.imageUrl,
+          _productToEdit.isFavourite,
+        );
+      } else {
+        // Update Product
+        await Provider.of<Products>(context, listen: false)
+            .editProductAsync(_productToEdit);
+      }
+    } catch (error) {
+      await showDialog<Null>(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: Text('Error Occured!'),
+              content: Text('Some error occured.'),
+              actions: [
+                FlatButton(
+                    child: Text('Okay'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    }),
+              ],
+            );
+          });
+    } finally {
+      setState(() {
+        this._isLoading = false;
+      });
+      Navigator.of(context).pop();
+    }
+  }
+
   void _saveForm() {
     final isValid = _form.currentState.validate();
     if (!isValid) return;
@@ -149,7 +197,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
           IconButton(
               icon: Icon(Icons.save),
               onPressed: () {
-                this._saveForm();
+                //this._saveForm();
+                this._saveFormAsync();
               }),
         ],
       ),

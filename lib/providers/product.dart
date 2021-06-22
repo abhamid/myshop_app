@@ -30,7 +30,7 @@ class Product with ChangeNotifier {
     notifyListeners();
 
     try {
-      final url = Uri.https(_authority, '/products/${this.id}');
+      final url = Uri.https(_authority, '/products/${this.id}.json');
       var response = await http.patch(url,
           body: json.encode(
             {'isFavourite': this.isFavourite},

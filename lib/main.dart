@@ -7,6 +7,8 @@ import './screens/shopping_cart_screen.dart';
 import './screens/orders_screen.dart';
 import './screens/user_product_screen.dart';
 import './screens/edit_product_screen.dart';
+import './screens/auth_screen.dart';
+import './screens/my_auth_screen.dart';
 
 import './providers/products.dart';
 import './providers/cart.dart';
@@ -41,9 +43,10 @@ class MyApp extends StatelessWidget {
           accentColor: Colors.deepOrange,
           fontFamily: 'Lato',
         ),
-        //home: ProductOverViewPage(),
+        home: MyAuthScreen(),
         routes: {
-          '/': (ctx) => ProductOverViewPage(),
+          //'/': (ctx) => AuthScreen(),
+          ProductOverViewPage.routeName: (ctx) => ProductOverViewPage(),
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
           ShoppingCartScreen.routeName: (ctx) => ShoppingCartScreen(),
           OrdersScreen.routeName: (ctx) => OrdersScreen(),

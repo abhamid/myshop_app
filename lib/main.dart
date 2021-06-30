@@ -13,6 +13,7 @@ import './screens/my_auth_screen.dart';
 import './providers/products.dart';
 import './providers/cart.dart';
 import './providers/orders.dart';
+import './providers/auth.dart';
 
 import './widget/app_drawer.dart';
 
@@ -27,31 +28,42 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (context) => Auth(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Products>(
           create: (context) => Products(),
+          update: (context, auth, prevProducts) =>
+              prevProducts..update(auth.token, auth.userId),
         ),
         ChangeNotifierProvider(
           create: (context) => Cart(),
         ),
-        ChangeNotifierProvider(
+        ChangeNotifierProxyProvider<Auth, Orders>(
           create: (context) => Orders(),
+          update: (context, auth, prevOrders) =>
+              prevOrders..update(auth.token, auth.userId),
         ),
       ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.purple,
-          accentColor: Colors.deepOrange,
-          fontFamily: 'Lato',
-        ),
-        home: MyAuthScreen(),
-        routes: {
-          //'/': (ctx) => AuthScreen(),
-          ProductOverViewPage.routeName: (ctx) => ProductOverViewPage(),
-          ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-          ShoppingCartScreen.routeName: (ctx) => ShoppingCartScreen(),
-          OrdersScreen.routeName: (ctx) => OrdersScreen(),
-          UserProductScreen.routeName: (ctx) => UserProductScreen(),
-          EditProductScreen.routeName: (ctx) => EditProductScreen(),
+      child: Consumer<Auth>(
+        builder: (ctx, auth, child) {
+          return MaterialApp(
+            title: 'Flutter Demo',
+            theme: ThemeData(
+              primarySwatch: Colors.purple,
+              accentColor: Colors.deepOrange,
+              fontFamily: 'Lato',
+            ),
+            home: auth.isAuth ? ProductOverViewPage() : MyAuthScreen(),
+            routes: {
+              //'/': (ctx) => AuthScreen(),
+              ProductOverViewPage.routeName: (ctx) => ProductOverViewPage(),
+              ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+              ShoppingCartScreen.routeName: (ctx) => ShoppingCartScreen(),
+              OrdersScreen.routeName: (ctx) => OrdersScreen(),
+              UserProductScreen.routeName: (ctx) => UserProductScreen(),
+              EditProductScreen.routeName: (ctx) => EditProductScreen(),
+            },
+          );
         },
       ),
     );

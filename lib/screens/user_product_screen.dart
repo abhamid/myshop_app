@@ -13,12 +13,12 @@ class UserProductScreen extends StatelessWidget {
 
   Future<void> _refreshScreen(BuildContext context) async {
     await Provider.of<Products>(context, listen: false)
-        .fetchProductsFromServer();
+        .fetchProductsFromServer(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final products = Provider.of<Products>(context);
+    //final products = Provider.of<Products>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -32,27 +32,53 @@ class UserProductScreen extends StatelessWidget {
         ],
       ),
       drawer: AppDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () => this._refreshScreen(context),
-        child: Padding(
-          padding: EdgeInsets.all(8),
-          child: ListView.builder(
-            itemCount: products.items.length,
-            itemBuilder: (ctx, index) {
-              return ChangeNotifierProvider.value(
-                value: products.items[index],
-                child: Column(
-                  children: [
-                    UserProductItem(),
-                    Divider(
-                      color: Colors.grey,
-                    ),
-                  ],
-                ),
+      body: FutureBuilder(
+        future: _refreshScreen(context),
+        builder: (ctx, dataSnapShot) {
+          if (dataSnapShot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            if (dataSnapShot.error != null) {
+              return Center(
+                child: Text('Error Loading Products'),
               );
-            },
-          ),
-        ),
+            } else {
+              return RefreshIndicator(
+                onRefresh: () => this._refreshScreen(context),
+                child: Consumer<Products>(builder: (ctx, products, child) {
+                  return Padding(
+                    padding: EdgeInsets.all(8),
+                    child: products.items.length <= 0
+                        ? Center(
+                            child: Text(
+                              'Please Add Products',
+                              style: Theme.of(context).textTheme.title,
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: products.items.length,
+                            itemBuilder: (ctx, index) {
+                              return ChangeNotifierProvider.value(
+                                value: products.items[index],
+                                child: Column(
+                                  children: [
+                                    UserProductItem(),
+                                    Divider(
+                                      color: Colors.grey,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  );
+                }),
+              );
+            }
+          }
+        },
       ),
     );
   }

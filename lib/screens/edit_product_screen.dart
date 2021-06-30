@@ -29,7 +29,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
     description: null,
     price: null,
     imageUrl: null,
-    isFavourite: false,
   );
 
   @override
@@ -54,7 +53,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
             description: product.description,
             price: product.price,
             imageUrl: product.imageUrl,
-            isFavourite: product.isFavourite,
           );
 
           _imageUrlController.text = product.imageUrl;
@@ -107,7 +105,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
           _productToEdit.description,
           _productToEdit.price,
           _productToEdit.imageUrl,
-          _productToEdit.isFavourite,
         );
       } else {
         // Update Product
@@ -153,7 +150,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
         _productToEdit.description,
         _productToEdit.price,
         _productToEdit.imageUrl,
-        _productToEdit.isFavourite,
       )
           .catchError((error) {
         return showDialog<Null>(
@@ -236,7 +232,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             description: this._productToEdit.description,
                             price: this._productToEdit.price,
                             imageUrl: _productToEdit.imageUrl,
-                            isFavourite: _productToEdit.isFavourite,
                           );
                         },
                       ),
@@ -274,7 +269,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             description: this._productToEdit.description,
                             price: double.parse(value),
                             imageUrl: _productToEdit.imageUrl,
-                            isFavourite: _productToEdit.isFavourite,
                           );
                         },
                       ),
@@ -299,7 +293,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             description: value,
                             price: this._productToEdit.price,
                             imageUrl: _productToEdit.imageUrl,
-                            isFavourite: _productToEdit.isFavourite,
                           );
                         },
                       ),
@@ -366,7 +359,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                                   description: _productToEdit.description,
                                   price: this._productToEdit.price,
                                   imageUrl: value,
-                                  isFavourite: _productToEdit.isFavourite,
                                 );
                               },
                             ),

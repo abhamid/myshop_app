@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../screens/product_detail_screen.dart';
 import '../providers/product.dart';
 import '../providers/cart.dart';
+import '../providers/auth.dart';
 
 class ProductItem extends StatelessWidget {
   void _setectProduct(BuildContext context, String id) {
@@ -15,6 +16,7 @@ class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: false);
+    final auth = Provider.of<Auth>(context, listen: false);
     //final cart = Provider.of<Cart>(context, listen: false);
     final scaffold = ScaffoldMessenger.of(context);
 
@@ -39,7 +41,7 @@ class ProductItem extends StatelessWidget {
                   ),
                   onPressed: () async {
                     try {
-                      await product.toggleFavourite();
+                      await product.toggleFavourite(auth.token, auth.userId);
                     } catch (error) {
                       scaffold.hideCurrentSnackBar();
                       scaffold.showSnackBar(SnackBar(

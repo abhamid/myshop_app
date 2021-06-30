@@ -1,6 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth.dart';
+import '../model/http_exception.dart';
 
 enum MyAuthMode {
   SignUp,
@@ -101,7 +105,26 @@ class _MyAuthCardState extends State<MyAuthCard> {
     'password': '',
   };
 
-  void _submit() {
+  void showErrorDialog(String errorMessage) {
+    showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text(errorMessage),
+            actions: <Widget>[
+              FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Okay'),
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _submit() async {
     if (!_formKey.currentState.validate()) {
       return;
     }
@@ -112,10 +135,37 @@ class _MyAuthCardState extends State<MyAuthCard> {
       _isLoading = true;
     });
 
-    if (_authMode == MyAuthMode.Login) {
-      //Log user in
-    } else {
-      //Signup user
+    try {
+      if (_authMode == MyAuthMode.Login) {
+        //Log user in
+        await Provider.of<Auth>(context, listen: false)
+            .signIn(_authData['email'], _authData['password']);
+      } else {
+        //Signup user
+        await Provider.of<Auth>(context, listen: false).signUp(
+          _authData['email'],
+          _authData['password'],
+        );
+      }
+    } on HttpException catch (error) {
+      var errorMessage = 'Authentication failed';
+
+      if (error.message.contains('EMAIL_EXISTS')) {
+        errorMessage = 'Email Exists';
+      } else if (error.message.contains('OPERATION_NOT_ALLOWED')) {
+        errorMessage = 'Operation Not allowed';
+      } else if (error.message.contains('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+        errorMessage = 'Too many attempts try later';
+      } else if (error.message.contains('INVALID_PASSWORD')) {
+        errorMessage = 'Invalid password';
+      } else if (error.message.contains('USER_DISABLED')) {
+        errorMessage = 'This user has been disabled';
+      }
+
+      showErrorDialog(errorMessage);
+    } catch (error) {
+      var errorMessage = 'Could not authenticate! Please try again later.';
+      showErrorDialog(errorMessage);
     }
 
     setState(() {

@@ -10,14 +10,23 @@ import '../model/http_exception.dart';
 class Orders with ChangeNotifier {
   final _authority = 'flutter-webapp-952d4-default-rtdb.firebaseio.com';
 
+  var _authToken;
+  var _userId;
+
   List<OrderItem> _items = [];
 
   List<OrderItem> get items {
     return [..._items];
   }
 
+  void update(String authToken, String userId) {
+    this._authToken = authToken;
+    this._userId = userId;
+  }
+
   Future<void> fetchOrdersFromServer() async {
-    final url = Uri.https(_authority, '/orders.json');
+    final url = Uri.parse(
+        'https://${this._authority}/orders/${this._userId}.json?auth=${this._authToken}');
 
     try {
       final response = await http.get(url);
@@ -52,7 +61,8 @@ class Orders with ChangeNotifier {
   }
 
   Future<void> addOrder(List<CartItem> products, double totalAmount) async {
-    final url = Uri.https(_authority, '/orders.json');
+    final url = Uri.parse(
+        'https://${this._authority}/orders/${this._userId}.json?auth=${this._authToken}');
 
     try {
       var timeStamp = DateTime.now();

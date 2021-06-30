@@ -8,42 +8,11 @@ import '../model/http_exception.dart';
 
 class Products with ChangeNotifier {
   final _authority = 'flutter-webapp-952d4-default-rtdb.firebaseio.com';
-  final _productsEndPoint = '/products.json';
 
-  List<Product> _items = [
-    // Product(
-    //   id: 'p1',
-    //   title: 'Red Shirt',
-    //   description: 'A red shirt - it is pretty red!',
-    //   price: 29.99,
-    //   imageUrl:
-    //       'https://cdn.pixabay.com/photo/2016/10/02/22/17/red-t-shirt-1710578_1280.jpg',
-    // ),
-    // Product(
-    //   id: 'p2',
-    //   title: 'Trousers',
-    //   description: 'A nice pair of trousers.',
-    //   price: 59.99,
-    //   imageUrl:
-    //       'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Trousers%2C_dress_%28AM_1960.022-8%29.jpg/512px-Trousers%2C_dress_%28AM_1960.022-8%29.jpg',
-    // ),
-    // Product(
-    //   id: 'p3',
-    //   title: 'Yellow Scarf',
-    //   description: 'Warm and cozy - exactly what you need for the winter.',
-    //   price: 19.99,
-    //   imageUrl:
-    //       'https://live.staticflickr.com/4043/4438260868_cc79b3369d_z.jpg',
-    // ),
-    // Product(
-    //   id: 'p4',
-    //   title: 'A Pan',
-    //   description: 'Prepare any meal you want.',
-    //   price: 49.99,
-    //   imageUrl:
-    //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
-    // ),
-  ];
+  var _authToken;
+  var _userId;
+
+  List<Product> _items = [];
 
   List<Product> get items {
     return [..._items];
@@ -53,16 +22,35 @@ class Products with ChangeNotifier {
     return _items.where((item) => item.isFavourite).toList();
   }
 
+  void update(String authToken, String userid) {
+    this._authToken = authToken;
+    this._userId = userid;
+  }
+
   Product findById(String id) {
     return items.firstWhere((item) => item.id == id);
   }
 
-  Future<void> fetchProductsFromServer() async {
-    final url = Uri.https(_authority, _productsEndPoint);
+  Future<void> fetchProductsFromServer([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser ? '&orderBy="creatorId"&equalTo="${this._userId}"' : '';
+    var url = Uri.parse(
+        'https://${this._authority}/products.json?auth=${this._authToken}${filterString}');
     try {
       final response = await http.get(url);
-      final List<Product> fetchedProducts = [];
+
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      if (extractedData == null) {
+        return;
+      }
+      //print(json.decode(response.body));
+      url = Uri.parse(
+          'https://${this._authority}/userfavorites/${this._userId}.json?auth=${this._authToken}');
+      final responseFavourites = await http.get(url);
+
+      final userFavouritesData = json.decode(responseFavourites.body);
+
+      final List<Product> fetchedProducts = [];
       extractedData.forEach((prodId, prodData) {
         fetchedProducts.insert(
             0,
@@ -72,7 +60,9 @@ class Products with ChangeNotifier {
               description: prodData['description'],
               price: prodData['price'],
               imageUrl: prodData['imageUrl'],
-              isFavourite: prodData['isFavourite'],
+              isFavourite: userFavouritesData == null
+                  ? false
+                  : userFavouritesData[prodId] ?? false,
             ));
       });
       this._items = fetchedProducts;
@@ -88,10 +78,10 @@ class Products with ChangeNotifier {
     String description,
     double price,
     String imageUrl,
-    bool isFavourite,
   ) async {
-    final url = Uri.https(_authority, _productsEndPoint);
-
+    //final url = Uri.https(_authority, '/products.json?auth=${this._authToken}');
+    final url = Uri.parse(
+        'https://${this._authority}/products.json?auth=${this._authToken}');
     try {
       final response = await http.post(
         url,
@@ -100,7 +90,7 @@ class Products with ChangeNotifier {
           'description': description,
           'price': price,
           'imageUrl': imageUrl,
-          'isFavourite': isFavourite,
+          'creatorId': this._userId,
         }),
       );
 
@@ -111,7 +101,6 @@ class Products with ChangeNotifier {
         description: description,
         imageUrl: imageUrl,
         price: price,
-        isFavourite: isFavourite,
       );
 
       _items.add(productToAdd);
@@ -127,9 +116,10 @@ class Products with ChangeNotifier {
     String description,
     double price,
     String imageUrl,
-    bool isFavourite,
   ) {
-    final url = Uri.https(_authority, _productsEndPoint);
+    //final url = Uri.https(_authority, '/products.json?auth=${this._authToken}');
+    final url = Uri.parse(
+        'https://${this._authority}/products.json?auth=${this._authToken}');
     return http
         .post(
       url,
@@ -138,7 +128,7 @@ class Products with ChangeNotifier {
         "description": description,
         "price": price,
         "imageUrl": imageUrl,
-        "isFavourite": isFavourite,
+        "creatorId": this._userId,
       }),
     )
         .then((response) {
@@ -148,7 +138,6 @@ class Products with ChangeNotifier {
         description: description,
         price: price,
         imageUrl: imageUrl,
-        isFavourite: isFavourite,
       );
 
       _items.add(product);
@@ -161,7 +150,9 @@ class Products with ChangeNotifier {
 
   Future<void> editProductAsync(Product productToEdit) async {
     if (productToEdit == null || productToEdit.id == null) return;
-    final url = Uri.https(_authority, '/products/${productToEdit.id}.json');
+    //final url = Uri.https(_authority, '/products/${productToEdit.id}.json');
+    final url = Uri.parse(
+        'https://${this._authority}/products/${productToEdit.id}.json?auth=${this._authToken}');
     try {
       final response = await http.patch(
         url,
@@ -203,7 +194,6 @@ class Products with ChangeNotifier {
         productToEdit.description,
         productToEdit.price,
         productToEdit.imageUrl,
-        productToEdit.isFavourite,
       );
     } else {
       _items[productIndex] = productToEdit;
@@ -213,7 +203,9 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProductAsync(String productId) async {
     if (productId == null) return;
-    final url = Uri.https(_authority, '/products/$productId.json');
+    //final url = Uri.https(_authority, '/products/$productId.json');
+    final url = Uri.parse(
+        'https://${this._authority}/products/$productId.json?auth=${this._authToken}');
 
     final productIndex =
         _items.indexWhere((product) => product.id == productId);
@@ -235,7 +227,11 @@ class Products with ChangeNotifier {
 
   void deleteProduct(String productId) {
     if (productId == null) return;
-    final url = Uri.https(_authority, '/products/$productId.json');
+    //final url = Uri.https(_authority, '/products/$productId.json');
+
+    final url = Uri.parse(
+        'https://${this._authority}/products/$productId.json?auth=${this._authToken}');
+
     final productIndex =
         _items.indexWhere((product) => product.id == productId);
     var productToRemove = _items[productIndex];

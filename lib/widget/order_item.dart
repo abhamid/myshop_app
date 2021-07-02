@@ -18,31 +18,45 @@ class _OrderItemState extends State<OrderItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.all(10),
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            title: Text('\$${widget.orderItem.amount.toStringAsFixed(2)}'),
-            subtitle: Text(
-              DateFormat('dd/MM/yyyy hh:mm').format(widget.orderItem.dateTime),
-            ),
-            trailing: IconButton(
-              icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
-              onPressed: () {
-                setState(() {
-                  this._isExpanded = !this._isExpanded;
-                });
-              },
-            ),
-          ),
-          if (_isExpanded)
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 15),
-              height: min(
-                widget.orderItem.products.length * 20.0 + 10,
-                100,
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeIn,
+      height: _isExpanded
+          ? min(
+              widget.orderItem.products.length * 20.0 + 110,
+              200,
+            )
+          : 95,
+      child: Card(
+        margin: EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: Text('\$${widget.orderItem.amount.toStringAsFixed(2)}'),
+              subtitle: Text(
+                DateFormat('dd/MM/yyyy hh:mm')
+                    .format(widget.orderItem.dateTime),
               ),
+              trailing: IconButton(
+                icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+                onPressed: () {
+                  setState(() {
+                    this._isExpanded = !this._isExpanded;
+                  });
+                },
+              ),
+            ),
+            //if (_isExpanded)
+            AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeIn,
+              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 15),
+              height: _isExpanded
+                  ? min(
+                      widget.orderItem.products.length * 20.0 + 10,
+                      100,
+                    )
+                  : 0,
               child: ListView(
                 children: widget.orderItem.products
                     .map((produt) => Row(
@@ -67,7 +81,8 @@ class _OrderItemState extends State<OrderItem> {
                     .toList(),
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
